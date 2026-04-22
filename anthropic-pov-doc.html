@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>After Discovery — A POV on the Scale Problem</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;1,8..60,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ─── Reset ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ─── Tokens ─── */
+    :root {
+      --serif: 'Source Serif 4', 'Georgia', 'Times New Roman', serif;
+      --sans:  'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --bg:         #F9F8F6;
+      --surface:    #FFFFFF;
+      --text:       #111111;
+      --text-mid:   #444444;
+      --text-muted: #6B6B6B;
+      --text-faint: #9A9A9A;
+      --border:     #E3E2DE;
+      --accent:     #C25C37;
+      --accent-bg:  #FDF3EE;
+    }
+
+    /* ─── Base ─── */
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-weight: 400;
+      line-height: 1.65;
+    }
+
+    /* ─── Progress bar ─── */
+    #progress {
+      position: fixed;
+      top: 0; left: 0;
+      width: 0%;
+      height: 2px;
+      background: var(--accent);
+      z-index: 100;
+      transition: width 0.1s linear;
+    }
+
+    /* ─── Layout ─── */
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 80px 40px 120px;
+    }
+
+    .prose { max-width: 680px; }
+
+    /* ─── Document header ─── */
+    .doc-header {
+      margin-bottom: 72px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .doc-eyebrow {
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 22px;
+    }
+
+    .doc-title {
+      font-family: var(--serif);
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 400;
+      line-height: 1.18;
+      letter-spacing: -0.015em;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    .doc-meta {
+      font-size: 14px;
+      color: var(--text-faint);
+      font-weight: 300;
+    }
+
+    /* ─── Sections ─── */
+    section { margin-bottom: 64px; }
+
+    .section-label {
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 22px;
+    }
+
+    /* ─── Prose ─── */
+    p {
+      font-size: 15.5px;
+      line-height: 1.73;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+
+    p:last-child { margin-bottom: 0; }
+
+    .lead {
+      font-family: var(--serif);
+      font-size: 17px;
+      line-height: 1.68;
+      font-weight: 300;
+      color: var(--text-mid);
+    }
+
+    /* ─── Tier table ─── */
+    .tier-list {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .tier {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tier:last-child { border-bottom: none; }
+
+    .tier-num {
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      padding: 22px 0 20px 24px;
+    }
+
+    .tier-body {
+      border-left: 1px solid var(--border);
+      padding: 18px 24px 20px 20px;
+    }
+
+    .tier-name {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 5px;
+    }
+
+    .tier-desc {
+      font-size: 13.5px;
+      line-height: 1.62;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .tier-tag {
+      display: inline-block;
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      background: var(--accent-bg);
+      color: var(--accent);
+      padding: 2px 7px;
+      border-radius: 3px;
+      margin-bottom: 7px;
+    }
+
+    /* ─── Journey flow ─── */
+    .journey-intro {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 620px;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .journey-step {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 18px;
+    }
+
+    .step-track {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 3px;
+    }
+
+    .track-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .track-signal {
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border-color: var(--accent);
+      margin-top: -1px;
+    }
+
+    .track-end {
+      background: var(--text);
+      border-color: var(--text);
+    }
+
+    .track-line {
+      width: 1px;
+      background: var(--border);
+      flex: 1;
+      min-height: 24px;
+    }
+
+    .journey-terminal .track-line { display: none; }
+
+    .step-body { padding-bottom: 36px; }
+    .journey-terminal .step-body { padding-bottom: 0; }
+
+    .step-eyebrow {
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 4px;
+    }
+
+    .step-heading {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .step-note {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.58;
+      margin-bottom: 0;
+    }
+
+    /* ─── Email cards ─── */
+    .email-card {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--surface);
+      margin-top: 14px;
+    }
+
+    .email-meta-bar {
+      background: #F5F5F2;
+      border-bottom: 1px solid var(--border);
+      padding: 11px 16px;
+    }
+
+    .email-row {
+      display: flex;
+      gap: 10px;
+      font-size: 11.5px;
+      line-height: 1.55;
+      color: var(--text-mid);
+      margin-bottom: 3px;
+    }
+
+    .email-row:last-child { margin-bottom: 0; }
+
+    .em-label {
+      color: var(--text-faint);
+      min-width: 44px;
+      flex-shrink: 0;
+      font-size: 11px;
+    }
+
+    .em-subject strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .email-body-content {
+      padding: 16px 18px 18px;
+    }
+
+    .email-body-content p {
+      font-size: 12.5px;
+      line-height: 1.62;
+      color: var(--text-mid);
+      margin-bottom: 9px;
+    }
+
+    .em-list {
+      list-style: none;
+      margin: 0 0 9px;
+      padding: 0;
+    }
+
+    .em-list li {
+      font-size: 12.5px;
+      line-height: 1.58;
+      color: var(--text-mid);
+      padding-left: 14px;
+      position: relative;
+      margin-bottom: 4px;
+    }
+
+    .em-list li::before {
+      content: '·';
+      position: absolute;
+      left: 2px;
+      color: var(--text-faint);
+      font-weight: bold;
+    }
+
+    .em-cta {
+      display: inline-block;
+      background: var(--text);
+      color: white !important;
+      font-size: 11.5px;
+      font-weight: 500;
+      padding: 6px 13px;
+      border-radius: 4px;
+      text-decoration: none;
+      margin-top: 8px;
+      cursor: default;
+      letter-spacing: 0.01em;
+    }
+
+    .em-cta-ghost {
+      background: transparent;
+      color: var(--text) !important;
+      border: 1px solid var(--border);
+    }
+
+    /* ─── Email pair ─── */
+    .email-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .email-pair .email-card { margin-top: 0; }
+
+    .email-pair-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 7px;
+    }
+
+    .em-option-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin: 8px 0 4px;
+    }
+
+    .em-option-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      font-size: 12px;
+      font-family: var(--sans);
+      color: var(--text-mid);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 7px 10px;
+      cursor: pointer;
+      transition: border-color 0.1s, background 0.1s;
+    }
+
+    .em-option-btn:hover { border-color: var(--text-muted); background: white; }
+
+    /* ─── Branch grid ─── */
+    .branch-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .branch-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    .pill-high {
+      background: #EDFBF4;
+      color: #1A6E42;
+      border: 1px solid #C0E9D2;
+    }
+
+    .pill-low {
+      background: #FFFAEC;
+      color: #856100;
+      border: 1px solid #EEE0A5;
+    }
+
+    /* ─── Chatbot capabilities ─── */
+    .bot-caps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-top: 14px;
+    }
+
+    .bot-cap-item {
+      background: var(--surface);
+      padding: 13px 15px 15px;
+    }
+
+    .bot-cap-label {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .bot-cap-desc {
+      font-size: 11.5px;
+      line-height: 1.55;
+      color: var(--text-muted);
+    }
+
+    /* ─── Workflow grid ─── */
+    .workflow-intro {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 620px;
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .workflow-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .workflow-item {
+      background: var(--surface);
+      padding: 18px 20px 20px;
+    }
+
+    .workflow-num {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: var(--text-faint);
+      margin-bottom: 6px;
+    }
+
+    .workflow-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .workflow-desc {
+      font-size: 12.5px;
+      line-height: 1.58;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* ─── Callout / bridge ─── */
+    .callout {
+      border-left: 2.5px solid var(--accent);
+      background: var(--accent-bg);
+      padding: 28px 32px;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .callout p {
+      font-family: var(--serif);
+      font-size: 17px;
+      line-height: 1.68;
+      color: #2B2B2B;
+      font-style: italic;
+      margin: 0;
+    }
+
+    /* ─── Questions ─── */
+    .question-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .question-list li {
+      font-size: 15.5px;
+      line-height: 1.62;
+      color: var(--text);
+      padding-left: 22px;
+      position: relative;
+    }
+
+    .question-list li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: var(--text-faint);
+      font-weight: 300;
+    }
+
+    /* ─── Footer ─── */
+    footer {
+      padding-top: 36px;
+      border-top: 1px solid var(--border);
+      margin-top: 64px;
+    }
+
+    footer p {
+      font-size: 12px;
+      color: var(--text-faint);
+      margin: 0;
+      line-height: 1.65;
+    }
+
+    /* ─── Featured workflow cards ─── */
+    .featured-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .feat-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--surface);
+    }
+
+    .feat-card-header { padding: 20px 22px 18px; }
+
+    .feat-num {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 6px;
+    }
+
+    .feat-title {
+      font-size: 14.5px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 7px;
+    }
+
+    .feat-desc {
+      font-size: 13px;
+      line-height: 1.62;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .feat-flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .flow-step {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 3px 8px;
+      white-space: nowrap;
+    }
+
+    .flow-arrow { font-size: 11px; color: var(--text-faint); flex-shrink: 0; }
+
+    .feat-visual {
+      padding: 16px 20px;
+      background: #F7F7F5;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Sales Nav visual */
+    .snav-layout {
+      display: grid;
+      grid-template-columns: 1fr 20px 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .snav-list { display: flex; flex-direction: column; gap: 5px; }
+
+    .snav-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 7px 10px;
+    }
+
+    .snav-avi {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #E8EEFF;
+      color: #4B5CD6;
+      font-size: 8.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .snav-name { font-size: 11.5px; font-weight: 500; color: var(--text); line-height: 1.3; }
+    .snav-meta { font-size: 10.5px; color: var(--text-faint); line-height: 1.3; }
+
+    .snav-arrows {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+      color: var(--text-faint);
+      font-size: 10px;
+    }
+
+    .snav-messages { display: flex; flex-direction: column; gap: 5px; }
+
+    .snav-msg {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--accent);
+      border-radius: 0 5px 5px 0;
+      padding: 7px 10px;
+    }
+
+    .snav-msg-to {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--accent);
+      margin-bottom: 3px;
+    }
+
+    .snav-msg-body { font-size: 11px; color: var(--text-mid); line-height: 1.5; }
+
+    /* Meeting prep visual */
+    .brief-invite {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 9px 13px;
+      margin-bottom: 8px;
+    }
+
+    .brief-cal-dot {
+      width: 8px;
+      height: 26px;
+      border-radius: 2px;
+      background: #5B8DEF;
+      flex-shrink: 0;
+    }
+
+    .brief-invite-title { font-size: 12.5px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+    .brief-invite-time  { font-size: 11px; color: var(--text-faint); }
+
+    .brief-sections {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+    }
+
+    .brief-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 8px 10px;
+    }
+
+    .brief-section-label {
+      font-size: 9.5px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 4px;
+    }
+
+    .brief-section-text { font-size: 11.5px; color: var(--text-mid); line-height: 1.5; }
+
+    /* Technical validation visual */
+    .tv-question {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--accent);
+      border-radius: 0 5px 5px 0;
+      padding: 9px 13px;
+      margin-bottom: 8px;
+    }
+
+    .tv-q-label {
+      font-size: 9.5px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 4px;
+    }
+
+    .tv-q-text { font-size: 12.5px; color: var(--text-mid); font-style: italic; line-height: 1.5; }
+
+    .tv-outputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+
+    .tv-output {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 8px 10px;
+    }
+
+    .tv-output-label {
+      font-size: 9.5px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 4px;
+    }
+
+    .tv-output-body { font-size: 11.5px; color: var(--text-mid); line-height: 1.5; }
+
+    /* ─── Chat modal ─── */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(17,17,17,0.38);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .chat-modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 480px;
+      max-height: min(580px, calc(100vh - 32px));
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.16);
+      transform: translateY(6px);
+      transition: transform 0.18s ease;
+    }
+
+    .modal-backdrop.open .chat-modal {
+      transform: translateY(0);
+    }
+
+    .chat-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .chat-header-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chat-status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #3CB371;
+      flex-shrink: 0;
+    }
+
+    .chat-close-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-faint);
+      font-size: 20px;
+      line-height: 1;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .chat-close-btn:hover { color: var(--text); background: var(--bg); }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 18px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      scroll-behavior: smooth;
+    }
+
+    .chat-msg {
+      display: flex;
+      gap: 9px;
+      align-items: flex-start;
+    }
+
+    .chat-msg.user-msg { flex-direction: row-reverse; }
+
+    .bot-avi {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--accent-bg);
+      border: 1px solid #F0C9B8;
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .chat-bubble {
+      max-width: 84%;
+      padding: 9px 13px;
+      font-size: 13px;
+      line-height: 1.62;
+      color: var(--text-mid);
+      border-radius: 3px 10px 10px 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      white-space: pre-line;
+    }
+
+    .user-msg .chat-bubble {
+      background: var(--text);
+      color: rgba(255,255,255,0.9);
+      border: none;
+      border-radius: 10px 3px 10px 10px;
+    }
+
+    .typing-bubble {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      padding: 11px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px 10px 10px 10px;
+    }
+
+    .typing-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--text-faint);
+      animation: tdot 1.2s infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes tdot {
+      0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+      30% { opacity: 1; transform: translateY(-2px); }
+    }
+
+    .chat-chips {
+      padding: 0 18px 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      flex-shrink: 0;
+    }
+
+    .chat-chip-btn {
+      font-size: 12px;
+      font-family: var(--sans);
+      color: var(--text-mid);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 11px;
+      cursor: pointer;
+      transition: border-color 0.1s, background 0.1s;
+      text-align: left;
+    }
+
+    .chat-chip-btn:hover { border-color: var(--text-muted); background: white; }
+
+    .chat-input-bar {
+      padding: 11px 14px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .chat-text-input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-family: var(--sans);
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      min-width: 0;
+    }
+
+    .chat-text-input:focus { border-color: #BCBBB7; background: white; }
+    .chat-text-input::placeholder { color: var(--text-faint); }
+
+    .chat-send-btn {
+      background: var(--text);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 0 14px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--sans);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .chat-send-btn:hover { background: #2a2a2a; }
+    .chat-send-btn:disabled { opacity: 0.35; cursor: default; }
+
+    /* ─── Print ─── */
+    @media print {
+      #progress { display: none; }
+      body { background: white; }
+      .page { padding: 0; max-width: 100%; }
+      .doc-header { margin-bottom: 48px; padding-bottom: 32px; }
+      section { margin-bottom: 48px; page-break-inside: avoid; }
+      .tier-list, .workflow-grid, .callout, .email-card, .journey-step { page-break-inside: avoid; }
+      .workflow-item, .tier, .email-meta-bar { background: white; }
+      @page { margin: 0.75in 0.9in; size: letter; }
+    }
+
+    /* ─── Mobile ─── */
+    @media (max-width: 640px) {
+      .page { padding: 48px 24px 80px; }
+      .workflow-grid { grid-template-columns: repeat(2, 1fr); }
+      .branch-grid { grid-template-columns: 1fr; }
+      .bot-caps { grid-template-columns: repeat(2, 1fr); }
+      .email-pair { grid-template-columns: 1fr; }
+      .snav-layout { grid-template-columns: 1fr; }
+      .snav-arrows { display: none; }
+      .brief-sections { grid-template-columns: 1fr; }
+      .tv-outputs { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .workflow-grid { grid-template-columns: 1fr; }
+      .tier { grid-template-columns: 56px 1fr; }
+      .callout { padding: 22px 22px; }
+      .callout p { font-size: 15.5px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="progress" aria-hidden="true"></div>
+
+  <div class="page">
+
+    <!-- ─── Header ─── -->
+    <header class="doc-header">
+      <div class="doc-eyebrow">Anthropic &mdash; AE Hiring</div>
+      <h1 class="doc-title">After Discovery: A POV on<br>the Scale Problem</h1>
+      <p class="doc-meta">April 2026 &mdash; prepared for hiring manager conversation</p>
+    </header>
+
+    <!-- ─── Opening frame ─── -->
+    <section>
+      <div class="prose">
+        <p class="lead">This is the kind of artifact I'd put together after a discovery call with a Glean customer — a short POV on what I heard, how I'd think about the problem, and where I'd want to pressure-test my assumptions. Ursula mentioned the team is navigating a scale challenge. Here's how I'd approach it.</p>
+      </div>
+    </section>
+
+    <!-- ─── The Problem ─── -->
+    <section>
+      <div class="section-label">The Problem</div>
+      <div class="prose">
+        <p>The bottleneck isn't pipeline — it's rep capacity. 100% inbound means every new call interrupts the next one. Volume is arriving faster than reps can work through it, and the consequence isn't lost pipeline — it's slowed velocity and compounding rep fatigue.</p>
+        <p>Hiring scales linearly and expensively. Adding headcount buys time, not leverage. The real lever is deflecting the predictable portion of the deal cycle — the part that follows a script — so reps stay on the work that actually requires judgment.</p>
+        <p>The strategic question: optimize for net-new logos or ACV expansion? My read is net-new logos. The inbound volume is the asset. Right now it's being starved by rep time-on-task. The opportunity is to make that volume convertible without proportional rep involvement.</p>
+      </div>
+    </section>
+
+    <!-- ─── Tiered Motion ─── -->
+    <section>
+      <div class="section-label">The Tiered Motion</div>
+      <div class="tier-list" role="list">
+
+        <div class="tier" role="listitem">
+          <div class="tier-num">T1</div>
+          <div class="tier-body">
+            <div class="tier-name">Ready to self-serve</div>
+            <p class="tier-desc">Route directly to Teams signup. No rep involved. Friction here is a cost, not a feature.</p>
+          </div>
+        </div>
+
+        <div class="tier" role="listitem">
+          <div class="tier-num">T2</div>
+          <div class="tier-body">
+            <div class="tier-name">Enterprise-ready, no questions</div>
+            <p class="tier-desc">Immediate automated response: a direct link to Enterprise checkout. No rep, no call scheduled. The buyer completes it on their own — a rep only steps in if the checkout breaks.</p>
+          </div>
+        </div>
+
+        <div class="tier" role="listitem">
+          <div class="tier-num">T3</div>
+          <div class="tier-body">
+            <span class="tier-tag">Highest leverage</span>
+            <div class="tier-name">Has questions</div>
+            <p class="tier-desc">Routed to the chatbot — no rep scheduled, no call to book. The chatbot handles the questions that currently fill rep calendars: pricing at every tier (seat counts, token commitments, spend thresholds, volume discounts), security posture, architecture, model training, use cases. Public documentation served inline. NDA click-through unlocks deeper security docs and architecture detail. ToS available directly. Deep or custom security questions submitted through the chat and answered async by the SMB team. Rep calendar stays clear.</p>
+          </div>
+        </div>
+
+        <div class="tier" role="listitem">
+          <div class="tier-num">T4</div>
+          <div class="tier-body">
+            <div class="tier-name">Human rep</div>
+            <p class="tier-desc">Reserved for complex enterprise, strategic logos, multi-stakeholder deals, procurement navigation, and expansions. The rep is a closer and relationship owner — not a Q&amp;A machine.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ─── Automated Journey ─── -->
+    <section>
+      <div class="section-label">What the Customer Receives</div>
+      <p class="journey-intro">The tiered motion isn't theoretical. This is what the automated layer looks like in practice — routed by usage signal, not by rep availability.</p>
+
+      <div class="journey-flow">
+
+        <!-- Step 1 -->
+        <div class="journey-step">
+          <div class="step-track">
+            <div class="track-dot"></div>
+            <div class="track-line"></div>
+          </div>
+          <div class="step-body">
+            <div class="step-eyebrow">Day 0</div>
+            <div class="step-heading">Inbound signup</div>
+            <p class="step-note">Teams plan activated. Usage clock starts. No rep involved.</p>
+          </div>
+        </div>
+
+        <!-- Step 2: Welcome email + demo deflection -->
+        <div class="journey-step">
+          <div class="step-track">
+            <div class="track-dot"></div>
+            <div class="track-line"></div>
+          </div>
+          <div class="step-body">
+            <div class="step-eyebrow">Day 0 &middot; Two parallel triggers</div>
+            <div class="step-heading">Automated email routing</div>
+
+            <div class="email-pair">
+
+              <div>
+                <div class="email-pair-label">Teams signup</div>
+                <div class="email-card">
+                  <div class="email-meta-bar">
+                    <div class="email-row"><span class="em-label">From</span><span>Claude at Anthropic &lt;team@anthropic.com&gt;</span></div>
+                    <div class="email-row"><span class="em-label">To</span><span>sarah@acme.com</span></div>
+                    <div class="email-row"><span class="em-label">Subject</span><strong>You're set up on Claude Teams</strong></div>
+                  </div>
+                  <div class="email-body-content">
+                    <p>Hi Sarah,</p>
+                    <p>You're in. A few things worth doing this week:</p>
+                    <ul class="em-list">
+                      <li>Share the invite link with your team — it's in your dashboard</li>
+                      <li>Try Claude on a real task: drafts, code review, research, data</li>
+                      <li>Set usage notifications so you're not caught off guard at month's end</li>
+                    </ul>
+                    <p>Questions? Reply here or reach us at support@anthropic.com.</p>
+                    <a class="em-cta" href="#">Open Claude →</a>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="email-pair-label">Demo request inbound</div>
+                <div class="email-card">
+                  <div class="email-meta-bar">
+                    <div class="email-row"><span class="em-label">From</span><span>Anthropic &lt;team@anthropic.com&gt;</span></div>
+                    <div class="email-row"><span class="em-label">To</span><span>sarah@acme.com</span></div>
+                    <div class="email-row"><span class="em-label">Subject</span><strong>Before we book a demo — what are you looking to do?</strong></div>
+                  </div>
+                  <div class="email-body-content">
+                    <p>Hi Sarah,</p>
+                    <p>Thanks for reaching out. Before we put time on the calendar, let me point you somewhere faster:</p>
+                    <div class="em-option-list">
+                      <button class="em-option-btn" data-open-demo="use-case">→ &nbsp;Explore a specific use case with Claude</button>
+                      <button class="em-option-btn" data-open-demo="enterprise">→ &nbsp;I'm ready for Enterprise — skip the demo</button>
+                      <button class="em-option-btn" data-open-demo="pilot">→ &nbsp;I want to run a 30-day pilot first</button>
+                      <button class="em-option-btn" data-open-demo="teams-trial">→ &nbsp;Just try Teams — show me a discount</button>
+                    </div>
+                    <p style="font-size:11px;color:var(--text-faint);margin-top:6px;">Most questions get answered faster this way.</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Step: Chatbot self-service -->
+        <div class="journey-step">
+          <div class="step-track">
+            <div class="track-dot"></div>
+            <div class="track-line"></div>
+          </div>
+          <div class="step-body">
+            <div class="step-eyebrow">T2 / T3 inbound &middot; Parallel path</div>
+            <div class="step-heading">Chatbot self-service — no rep scheduled</div>
+            <p class="step-note">Enterprise-bound and question-based inbound route here instead of a calendar. Everything they need is available on demand.</p>
+
+            <div class="bot-caps">
+              <div class="bot-cap-item">
+                <div class="bot-cap-label">Pricing</div>
+                <div class="bot-cap-desc">All tiers: seat counts, token commitments, spend thresholds, volume discounts</div>
+              </div>
+              <div class="bot-cap-item">
+                <div class="bot-cap-label">Security</div>
+                <div class="bot-cap-desc">Public security posture, architecture, model training — served inline</div>
+              </div>
+              <div class="bot-cap-item">
+                <div class="bot-cap-label">Deep docs</div>
+                <div class="bot-cap-desc">NDA click-through unlocks detailed security review and architecture documentation</div>
+              </div>
+              <div class="bot-cap-item">
+                <div class="bot-cap-label">ToS / MSA</div>
+                <div class="bot-cap-desc">Standard terms served directly in chat — no rep handoff required</div>
+              </div>
+              <div class="bot-cap-item">
+                <div class="bot-cap-label">Use cases</div>
+                <div class="bot-cap-desc">Examples from comparable customers, organized by team and workflow</div>
+              </div>
+              <div class="bot-cap-item">
+                <div class="bot-cap-label">Deep security Q&amp;A</div>
+                <div class="bot-cap-desc">Custom or sensitive questions submitted through chat, answered async by SMB team</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Step 3: Signal check + branch -->
+        <div class="journey-step">
+          <div class="step-track">
+            <div class="track-dot track-signal"></div>
+            <div class="track-line"></div>
+          </div>
+          <div class="step-body">
+            <div class="step-eyebrow">Days 1–14 &middot; Continuous</div>
+            <div class="step-heading">Usage signal monitored</div>
+            <p class="step-note">Monthly allocation tracked against seat count. Two triggers evaluated on a rolling basis.</p>
+
+            <div class="branch-grid">
+
+              <div>
+                <div class="branch-pill pill-high">↑ &nbsp;≥ 85% capacity used</div>
+                <div class="email-card">
+                  <div class="email-meta-bar">
+                    <div class="email-row"><span class="em-label">From</span><span>Claude at Anthropic &lt;team@anthropic.com&gt;</span></div>
+                    <div class="email-row"><span class="em-label">To</span><span>sarah@acme.com</span></div>
+                    <div class="email-row"><span class="em-label">Subject</span><strong>Your team is approaching its Claude limit</strong></div>
+                  </div>
+                  <div class="email-body-content">
+                    <p>Hi Sarah,</p>
+                    <p>Your team has used 85% of its monthly Claude Teams allocation.</p>
+                    <p>Before you hit the cap, here's what Enterprise unlocks:</p>
+                    <ul class="em-list">
+                      <li>No seat caps or message limits</li>
+                      <li>SSO / SAML, audit logs, admin controls</li>
+                      <li>Priority access and uptime SLA</li>
+                      <li>Custom contract and data terms</li>
+                    </ul>
+                    <p>Pricing, security documentation, and NDA access are all available without scheduling a call.</p>
+                    <a class="em-cta" href="#" data-open-chat>Explore Enterprise options →</a>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="branch-pill pill-low">↓ &nbsp;&lt; 50% used at Day 7</div>
+                <div class="email-card">
+                  <div class="email-meta-bar">
+                    <div class="email-row"><span class="em-label">From</span><span>Claude at Anthropic &lt;team@anthropic.com&gt;</span></div>
+                    <div class="email-row"><span class="em-label">To</span><span>sarah@acme.com</span></div>
+                    <div class="email-row"><span class="em-label">Subject</span><strong>What teams like yours are doing with Claude</strong></div>
+                  </div>
+                  <div class="email-body-content">
+                    <p>Hi Sarah,</p>
+                    <p>A few patterns we're seeing from teams at similar-sized companies:</p>
+                    <ul class="em-list">
+                      <li>Engineering: code review, PR summaries, refactor drafts</li>
+                      <li>Ops: internal Q&amp;A on top of existing documentation</li>
+                      <li>Sales: account research, proposal drafts, call prep</li>
+                    </ul>
+                    <p>If useful, I can share a few specific setups — takes 15 minutes.</p>
+                    <a class="em-cta em-cta-ghost" href="#">See what teams are building →</a>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Terminal step -->
+        <div class="journey-step journey-terminal">
+          <div class="step-track">
+            <div class="track-dot track-end"></div>
+            <div class="track-line"></div>
+          </div>
+          <div class="step-body">
+            <div class="step-eyebrow">Ongoing</div>
+            <div class="step-heading">Rep engaged only when it matters</div>
+            <p class="step-note">Complex procurement, multi-stakeholder deals, strategic logos. Everything else resolves without a calendar invite.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ─── Operator lens ─── -->
+    <section>
+      <div class="section-label">How I Use AI Day-to-Day</div>
+      <p class="workflow-intro">Three workflows cover the deal cycle end-to-end — prospecting, preparation, and technical validation. Six more run in the background.</p>
+
+      <div class="featured-cards">
+
+        <!-- Card 1: Hypothesis + Messaging -->
+        <div class="feat-card">
+          <div class="feat-card-header">
+            <div class="feat-num">01 &mdash; Prospecting</div>
+            <div class="feat-title">Hypothesis + Messaging Agent</div>
+            <p class="feat-desc">Input: a Sales Nav list. The agent cross-references each contact against Salesforce history, LinkedIn activity, and recent news, then writes personalized outreach per contact — tailored to their title, their company's context, and use cases from comparable customers. Every message has a different hook.</p>
+            <div class="feat-flow">
+              <span class="flow-step">Sales Nav screenshot in</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step">Cross-ref Salesforce + LinkedIn + web</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step">Map to comparable customer use cases</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step">Personalized outreach per contact out</span>
+            </div>
+          </div>
+          <div class="feat-visual">
+            <div class="snav-layout">
+              <div class="snav-list">
+                <div class="snav-row">
+                  <div class="snav-avi">JR</div>
+                  <div>
+                    <div class="snav-name">James R.</div>
+                    <div class="snav-meta">VP Engineering &middot; Datadog</div>
+                  </div>
+                </div>
+                <div class="snav-row">
+                  <div class="snav-avi">SK</div>
+                  <div>
+                    <div class="snav-name">Sarah K.</div>
+                    <div class="snav-meta">Head of IT &middot; Acme Corp</div>
+                  </div>
+                </div>
+                <div class="snav-row">
+                  <div class="snav-avi">MT</div>
+                  <div>
+                    <div class="snav-name">Marcus T.</div>
+                    <div class="snav-meta">CTO &middot; Finley Health</div>
+                  </div>
+                </div>
+              </div>
+              <div class="snav-arrows">
+                <span>→</span>
+                <span>→</span>
+                <span>→</span>
+              </div>
+              <div class="snav-messages">
+                <div class="snav-msg">
+                  <div class="snav-msg-to">James R. &middot; VP Eng, Datadog</div>
+                  <div class="snav-msg-body">Saw the push into developer platforms — we've helped similar eng orgs cut onboarding time in half by surfacing internal context at the moment it's needed...</div>
+                </div>
+                <div class="snav-msg">
+                  <div class="snav-msg-to">Sarah K. &middot; Head of IT, Acme</div>
+                  <div class="snav-msg-body">Given the M&amp;A activity last quarter, IT teams like yours are sitting on knowledge spread across a dozen tools nobody's connected yet...</div>
+                </div>
+                <div class="snav-msg">
+                  <div class="snav-msg-to">Marcus T. &middot; CTO, Finley Health</div>
+                  <div class="snav-msg-body">Healthcare CTOs moving to cloud infrastructure consistently hit the same wall: technical context trapped in Confluence, Slack, and docs that don't talk to each other...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Meeting Prep -->
+        <div class="feat-card">
+          <div class="feat-card-header">
+            <div class="feat-num">02 &mdash; Preparation</div>
+            <div class="feat-title">Meeting Prep Agent</div>
+            <p class="feat-desc">Input: an upcoming meeting on the calendar. Pulls Gong call history, Gmail threads, and account notes, then produces a pre-call brief — what's been discussed, where things stand, open items, talk tracks for this call, and recommended next steps. Shows up automatically before every call.</p>
+            <div class="feat-flow">
+              <span class="flow-step">Upcoming meeting</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step">Pull Gong + Gmail + notes</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step">Surface open items + prior context</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step">Pre-call brief out</span>
+            </div>
+          </div>
+          <div class="feat-visual">
+            <div class="brief-invite">
+              <div class="brief-cal-dot"></div>
+              <div>
+                <div class="brief-invite-title">Acme Corp &mdash; Discovery Call</div>
+                <div class="brief-invite-time">Tomorrow, 2:00 PM &middot; 45 min &middot; Sarah K., Marcus L., +1</div>
+              </div>
+            </div>
+            <div class="brief-sections">
+              <div class="brief-section">
+                <div class="brief-section-label">Where we left off</div>
+                <div class="brief-section-text">Discussed Confluence + Jira use case. Security review flagged. Champion: Sarah K. IT stakeholder not yet looped in.</div>
+              </div>
+              <div class="brief-section">
+                <div class="brief-section-label">Open items</div>
+                <div class="brief-section-text">SOC 2 report requested &middot; Pricing proposal pending &middot; IT intro outstanding</div>
+              </div>
+              <div class="brief-section">
+                <div class="brief-section-label">Talk tracks for this call</div>
+                <div class="brief-section-text">Lead with eng use case → surface IT early. Address security posture before they ask.</div>
+              </div>
+              <div class="brief-section">
+                <div class="brief-section-label">Recommended next steps</div>
+                <div class="brief-section-text">Intro to IT &middot; Send security docs &middot; Propose pilot structure + timeline</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Technical Validation -->
+        <div class="feat-card">
+          <div class="feat-card-header">
+            <div class="feat-num">03 &mdash; Technical Validation</div>
+            <div class="feat-title">Technical Validation Agent</div>
+            <p class="feat-desc">SE-in-a-box. Input: a customer's technical question or use case. The agent answers with sourced internal docs, validates whether Glean can accomplish their stated use case given their connector stack, and drafts a prototype recommendation — which connectors, which workflows, what the rollout looks like.</p>
+            <div class="feat-flow">
+              <span class="flow-step">Customer question in</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step">Index internal technical docs</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step">Validate use case feasibility</span>
+              <span class="flow-arrow">→</span>
+              <span class="flow-step">Prototype recommendation out</span>
+            </div>
+          </div>
+          <div class="feat-visual">
+            <div class="tv-question">
+              <div class="tv-q-label">Customer question</div>
+              <div class="tv-q-text">"Can Glean index our Confluence + Jira + internal wiki and answer engineering questions across all three?"</div>
+            </div>
+            <div class="tv-outputs">
+              <div class="tv-output">
+                <div class="tv-output-label">Answer + sourced docs</div>
+                <div class="tv-output-body">Yes — all three connectors are natively supported. Security posture per connector attached.</div>
+              </div>
+              <div class="tv-output">
+                <div class="tv-output-label">Feasibility check</div>
+                <div class="tv-output-body">Stack is fully compatible. No custom work required for standard deployment. Permission model maps cleanly.</div>
+              </div>
+              <div class="tv-output">
+                <div class="tv-output-label">Prototype rec</div>
+                <div class="tv-output-body">Start Confluence + Jira in week one. Add wiki in week two once admin permissions are scoped.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Compact six -->
+      <div class="workflow-grid" role="list">
+        <div class="workflow-item" role="listitem">
+          <div class="workflow-name">Account Tiering Agent</div>
+          <p class="workflow-desc">CSV in → region filter, Salesforce cross-reference, ICP match, recent funding → prioritized list out.</p>
+        </div>
+        <div class="workflow-item" role="listitem">
+          <div class="workflow-name">Current Deal State Agent</div>
+          <p class="workflow-desc">Pulls Gong + Salesforce + Gmail → current-state brief: use cases discussed, last touchpoint, next steps.</p>
+        </div>
+        <div class="workflow-item" role="listitem">
+          <div class="workflow-name">Follow-up Agent</div>
+          <p class="workflow-desc">Post-call: drafts next-step email, call summary, and follow-up plan. Runs before I'm out of the parking lot.</p>
+        </div>
+        <div class="workflow-item" role="listitem">
+          <div class="workflow-name">Pilot Approval Agent</div>
+          <p class="workflow-desc">Reads Gong, email, docs → pass/fail against SE and leadership criteria → auto-generates the pilot doc.</p>
+        </div>
+        <div class="workflow-item" role="listitem">
+          <div class="workflow-name">Contract + Pricing Agent</div>
+          <p class="workflow-desc">Budget-in → users/price out, or users-in → ARR out. Handles ramps. Flags redline patterns from prior deals.</p>
+        </div>
+        <div class="workflow-item" role="listitem">
+          <div class="workflow-name">Customer Health Agent</div>
+          <p class="workflow-desc">Weekly: pulls Zendesk tickets by urgency and age → posts digest to Slack. Existing book stays warm.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ─── Bridge ─── -->
+    <section>
+      <div class="callout">
+        <p>The common thread: AI handles assembly, humans handle judgment. Every workflow above replaces a 30-to-90-minute manual task with a 30-second prompt. Across a week, that's hours back — hours I spend on calls, in accounts, closing deals. That's the same frame I'd bring to the inbound motion at Anthropic.</p>
+      </div>
+    </section>
+
+    <!-- ─── Validation ─── -->
+    <section>
+      <div class="section-label">What I'd Want to Validate</div>
+      <div class="prose">
+        <ul class="question-list">
+          <li>What percentage of inbound today is self-serve-ready but still routed to a rep?</li>
+          <li>Where in the cycle do deals most often stall — security review, procurement, pricing, or somewhere earlier?</li>
+          <li>What's current time-from-inbound-to-closed-won, and which stage is the longest?</li>
+          <li>What has the team already tried on the automation side, and where did it fall short?</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ─── Footer ─── -->
+    <footer>
+      <p>Built with Claude Code. Same motion I run with Glean customers — instead of a follow-up email after discovery, a short artifact that shows the thinking.</p>
+    </footer>
+
+  </div>
+
+  <!-- ─── Demo Deflection Modal ─── -->
+  <div id="demoModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="Anthropic Demo Assistant">
+    <div class="chat-modal">
+      <div class="chat-header">
+        <div class="chat-header-label">
+          <div class="chat-status-dot"></div>
+          Anthropic — Let's find the right fit
+        </div>
+        <button class="chat-close-btn" id="demoClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="chat-messages" id="demoMsgs">
+        <div class="chat-msg">
+          <div class="bot-avi">C</div>
+          <div class="chat-bubble">Thanks for reaching out. Before we put time on the calendar — what are you actually trying to do? I can usually get you there faster without a call.</div>
+        </div>
+      </div>
+      <div class="chat-chips" id="demoChips">
+        <button class="chat-chip-btn" data-dflow="use-case">Explore a use case</button>
+        <button class="chat-chip-btn" data-dflow="enterprise">Sign up for Enterprise</button>
+        <button class="chat-chip-btn" data-dflow="pilot">Run a 30-day pilot</button>
+        <button class="chat-chip-btn" data-dflow="teams-trial">Try Teams with a discount</button>
+      </div>
+      <div class="chat-input-bar">
+        <input class="chat-text-input" id="demoInput" type="text" placeholder="Or describe what you're looking for…" autocomplete="off">
+        <button class="chat-send-btn" id="demoSend">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Chat Modal ─── -->
+  <div id="chatModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="Claude Enterprise Assistant">
+    <div class="chat-modal">
+      <div class="chat-header">
+        <div class="chat-header-label">
+          <div class="chat-status-dot"></div>
+          Claude Enterprise Assistant
+        </div>
+        <button class="chat-close-btn" id="chatClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="chat-messages" id="chatMsgs">
+        <div class="chat-msg">
+          <div class="bot-avi">C</div>
+          <div class="chat-bubble">Hi — I can answer questions about Enterprise pricing, security, compliance, and legal documentation without scheduling a call. What would you like to know?</div>
+        </div>
+      </div>
+      <div class="chat-chips" id="chatChips">
+        <button class="chat-chip-btn" data-q="Does Anthropic train on my data?">Does Anthropic train on my data?</button>
+        <button class="chat-chip-btn" data-q="What is the data retention policy?">Data retention policy?</button>
+        <button class="chat-chip-btn" data-q="Is Anthropic SOC 2 and GDPR compliant?">SOC 2 / GDPR compliant?</button>
+        <button class="chat-chip-btn" data-q="Can I see the MSA and Terms of Service?">Send me the MSA / terms</button>
+      </div>
+      <div class="chat-input-bar">
+        <input class="chat-text-input" id="chatInput" type="text" placeholder="Ask about security, pricing, terms…" autocomplete="off">
+        <button class="chat-send-btn" id="chatSend">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ─── Scroll progress ───
+    (function () {
+      var bar = document.getElementById('progress');
+      if (!bar) return;
+      function update() {
+        var st = document.documentElement.scrollTop || document.body.scrollTop;
+        var sh = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        bar.style.width = (sh > 0 ? (st / sh) * 100 : 0) + '%';
+      }
+      document.addEventListener('scroll', update, { passive: true });
+      update();
+    })();
+
+    // ─── Chat modal ───
+    (function () {
+      var kb = [
+        {
+          test: /train|training[\s-]data|use.*my.*data|my.*data.*train/i,
+          answer: "By default, Anthropic does not use data submitted through Claude for Enterprise to train models. This is covered explicitly in our Data Processing Addendum, which is included in every Enterprise agreement.\n\nIf you'd like to review the DPA now, I can share the link or walk you through the key sections here."
+        },
+        {
+          test: /retention|retain|how long|data.*stor|delet.*data|purge/i,
+          answer: "By default, conversations are retained for up to 30 days for trust and safety review.\n\nUnder a custom Enterprise agreement, you can negotiate reduced windows — including zero-day retention — depending on your compliance requirements. This is outlined in our standard DPA, which I can share now."
+        },
+        {
+          test: /soc.?2|gdpr|eu\s+data|european.*data|complian|iso\s*27|hipaa|ccpa/i,
+          answer: "Anthropic is SOC 2 Type II certified and GDPR-compliant. For EU customers, our DPA includes Standard Contractual Clauses (SCCs) for cross-border data transfers.\n\nThe SOC 2 report is available under NDA — want me to send the NDA link now? You'll have access within minutes of signing."
+        },
+        {
+          test: /terms|tos|msa|master.?service|agreement|contract|legal.?doc/i,
+          answer: "Our Terms of Service and Enterprise MSA are available here:\n\n→ anthropic.com/legal/terms-of-service\n→ anthropic.com/legal/enterprise-msa\n\nFor redlines — common asks are liability caps, data residency, and termination clauses — you can submit through our legal portal. Standard turnaround is 3–5 business days."
+        },
+        {
+          test: /pric|cost|how much|per.?seat|token|spend|commit|tier|plan|rate/i,
+          answer: "Enterprise pricing is based on seat count and token commitment tier. Example at 500 seats:\n\n• 500k tokens/seat/month — standard rate\n• 1M tokens/seat/month — ~12% volume discount\n• Unlimited — flat per-seat, negotiated annually\n\nSeparate volume tiers apply at 250+ and 1,000+ seats. Want me to model a specific seat count and usage estimate?"
+        },
+        {
+          test: /secur|pen.?test|vulnerab|encrypt|access.?control|sso|saml|audit.?log/i,
+          answer: "Anthropic's security controls include:\n\n• SOC 2 Type II certified\n• Annual third-party penetration testing\n• Encryption in transit (TLS 1.2+) and at rest (AES-256)\n• SSO / SAML, audit logs, role-based access controls\n• Vulnerability disclosure program\n\nFull security whitepaper and pentest summaries are available under NDA. Want me to send the NDA link?"
+        },
+        {
+          test: /nda|non.?disclos/i,
+          answer: "You can sign our standard NDA directly here — no rep required, no scheduling needed.\n\n→ anthropic.com/legal/nda\n\nOnce signed, you'll have immediate access to the full security whitepaper, SOC 2 report, pentest summaries, and detailed architecture documentation."
+        },
+        {
+          test: /architect|infra|model.*train|how.*built|data.*center|cloud|aws|gcp|azure/i,
+          answer: "Claude runs on Anthropic-managed infrastructure. Key details:\n\n• Hosted on AWS (US regions by default; EU available on Enterprise)\n• Model weights are not shared or fine-tuned on customer data\n• Customer data is logically isolated per organization\n\nDetailed architecture documentation — including network topology and data flow diagrams — is available after signing our standard NDA."
+        }
+      ];
+
+      var fallback = "That's a reasonable question to escalate. I'll flag it for the SMB team and you'll hear back within one business day.\n\nAlternatively, if it's a detailed security or compliance question, submitting it here routes it directly to our security review team. Want me to do that now?";
+
+      var backdrop = document.getElementById('chatModal');
+      var msgsEl   = document.getElementById('chatMsgs');
+      var inputEl  = document.getElementById('chatInput');
+      var sendBtn  = document.getElementById('chatSend');
+      var chipsEl  = document.getElementById('chatChips');
+      var busy     = false;
+
+      // Open
+      document.querySelectorAll('[data-open-chat]').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+          e.preventDefault();
+          backdrop.classList.add('open');
+          setTimeout(function() { if (inputEl) inputEl.focus(); }, 220);
+        });
+      });
+
+      // Close
+      document.getElementById('chatClose').addEventListener('click', function() {
+        backdrop.classList.remove('open');
+      });
+      backdrop.addEventListener('click', function(e) {
+        if (e.target === backdrop) backdrop.classList.remove('open');
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') backdrop.classList.remove('open');
+      });
+
+      function addMsg(text, isUser) {
+        var d = document.createElement('div');
+        d.className = 'chat-msg' + (isUser ? ' user-msg' : '');
+        if (isUser) {
+          d.innerHTML = '<div class="chat-bubble">' + text + '</div>';
+        } else {
+          d.innerHTML = '<div class="bot-avi">C</div><div class="chat-bubble">' + text.replace(/\n/g, '<br>') + '</div>';
+        }
+        msgsEl.appendChild(d);
+        msgsEl.scrollTop = msgsEl.scrollHeight;
+      }
+
+      function showTyping() {
+        var d = document.createElement('div');
+        d.className = 'chat-msg';
+        d.id = 'chat-typing';
+        d.innerHTML = '<div class="bot-avi">C</div><div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+        msgsEl.appendChild(d);
+        msgsEl.scrollTop = msgsEl.scrollHeight;
+      }
+
+      function hideTyping() {
+        var t = document.getElementById('chat-typing');
+        if (t) t.remove();
+      }
+
+      function respond(q) {
+        if (busy) return;
+        busy = true;
+        if (sendBtn) sendBtn.disabled = true;
+        if (chipsEl) chipsEl.style.display = 'none';
+
+        addMsg(q, true);
+        showTyping();
+
+        var match = null;
+        for (var i = 0; i < kb.length; i++) {
+          if (kb[i].test.test(q)) { match = kb[i]; break; }
+        }
+        var answer = match ? match.answer : fallback;
+
+        setTimeout(function() {
+          hideTyping();
+          addMsg(answer, false);
+          busy = false;
+          if (sendBtn) sendBtn.disabled = false;
+          setTimeout(function() { if (inputEl) inputEl.focus(); }, 50);
+        }, 850 + Math.random() * 550);
+      }
+
+      document.querySelectorAll('.chat-chip-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          respond(btn.dataset.q || btn.textContent.trim());
+        });
+      });
+
+      function send() {
+        var val = inputEl ? inputEl.value.trim() : '';
+        if (!val || busy) return;
+        inputEl.value = '';
+        respond(val);
+      }
+
+      if (sendBtn) sendBtn.addEventListener('click', send);
+      if (inputEl) inputEl.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+      });
+    })();
+
+    // ─── Demo deflection bot ───
+    (function () {
+      var flows = {
+        'use-case': {
+          q: 'I want to explore a specific use case',
+          answer: 'Good starting point. What does your team spend the most time on?',
+          chips: [
+            { label: 'Writing and documentation', key: 'uc-writing' },
+            { label: 'Code and engineering',      key: 'uc-code' },
+            { label: 'Research and analysis',     key: 'uc-research' },
+            { label: 'Customer communication',    key: 'uc-cx' },
+            { label: 'Internal Q&A / knowledge',  key: 'uc-qa' }
+          ]
+        },
+        'uc-writing': {
+          q: 'Writing and documentation',
+          answer: "Writing and docs is one of the fastest-to-value use cases.\n\nWhat teams typically build:\n• First drafts of internal docs, SOPs, and proposals\n• Meeting notes → structured action items\n• RFP responses from bullet points\n• Standardizing tone across team comms\n\nMost teams are seeing ROI in the first week. The fastest way to evaluate it is against a real task — a Teams trial gets you there in under five minutes.\n\nWant me to activate a trial?"
+        },
+        'uc-code': {
+          q: 'Code and engineering',
+          answer: "Engineering teams see some of the highest productivity gains.\n\nCommon setups:\n• PR reviews and inline suggestions\n• Refactoring and legacy code explanation\n• Test generation and documentation\n• Debugging with full file context\n\nFor larger orgs, Enterprise adds API access, SSO, and audit logs. Want me to walk you through what that looks like at your team size?"
+        },
+        'uc-research': {
+          q: 'Research and analysis',
+          answer: "Research teams use Claude to compress hours of reading into minutes.\n\nWhat we see most:\n• Summarizing long docs, reports, and earnings calls\n• Competitive analysis across multiple sources\n• Structuring raw data into briefs\n• 'What does this mean for us' on industry news\n\nIf this is your primary use case, a Teams plan gets you started immediately. Want to see what that looks like?"
+        },
+        'uc-cx': {
+          q: 'Customer communication',
+          answer: "Customer-facing teams use Claude for drafts, not final sends — it speeds up the loop without removing judgment.\n\nWhat teams build:\n• Support response drafts from ticket history\n• Personalized outreach at scale from CRM context\n• Call prep briefs and follow-up summaries\n• Escalation triage based on tone and urgency\n\nThis usually starts as a Teams pilot and moves to Enterprise once it's in the workflow. Want to try it?"
+        },
+        'uc-qa': {
+          q: 'Internal Q&A and knowledge',
+          answer: "Internal Q&A on your existing documentation is one of the most-requested enterprise use cases.\n\nThe pattern:\n• Connect Claude to your internal docs, wikis, or runbooks\n• Team members ask questions in plain language\n• Answers grounded in your actual content, with citations\n\nThis requires the Enterprise API tier for full context-window access and custom integrations. Want me to open the Enterprise assistant to walk through pricing and setup?"
+        },
+        'enterprise': {
+          q: "I'm ready for Enterprise — skip the demo",
+          answer: "You can explore everything without scheduling a call — pricing, security, compliance, and contract terms are all available right now.\n\nThe Enterprise assistant covers:\n→ Pricing at any seat count and token commitment tier\n→ Security posture, SOC 2, GDPR, data retention\n→ NDA access for deeper security documentation\n→ Terms of Service and MSA with redline process\n\nWant me to open it?",
+          action: 'open-enterprise'
+        },
+        'pilot': {
+          q: 'I want to run a 30-day pilot first',
+          answer: "Good news — you don't need a formal pilot. Claude Teams gives you the same core functionality as Enterprise, and you can start right now with a credit card.\n\nHere's what that looks like:\n• Sign up in minutes — no rep, no paperwork\n• Full access to Claude for your whole team\n• Use it on real work immediately — no scoping calls, no success criteria docs\n• When you're ready to talk Enterprise (SSO, custom contracts, volume pricing), just reach out and we'll pick it up from there\n\nMost teams find they have everything they need to evaluate in the first two weeks just by using it.\n\n→ anthropic.com/teams"
+        },
+        'teams-trial': {
+          q: 'Just try Teams — show me a discount',
+          answer: "Here's what a Teams trial looks like:\n\n• 30% off your first month — valid for 10–250 seats\n• Full access to all Teams features, no restrictions\n• No commitment after month one — cancel anytime\n• Usage dashboard so you can see ROI clearly\n\nUse code TEAMS30 at checkout or use the direct link below. No rep, no call — activates in under five minutes.\n\n→ anthropic.com/teams/trial?code=TEAMS30"
+        }
+      };
+
+      var textMap = [
+        { re: /use.?case|what.*can|how.*use|example/i,       key: 'use-case' },
+        { re: /writ|doc|memo|proposal/i,                     key: 'uc-writing' },
+        { re: /code|eng|dev|program/i,                       key: 'uc-code' },
+        { re: /research|analys|summar/i,                     key: 'uc-research' },
+        { re: /customer|support|cx|ticket/i,                 key: 'uc-cx' },
+        { re: /knowledge|internal|wiki|qa/i,                 key: 'uc-qa' },
+        { re: /enterprise|large|org/i,                       key: 'enterprise' },
+        { re: /pilot|poc|evaluat|proof/i,                    key: 'pilot' },
+        { re: /teams|discount|trial|cheap|start|try/i,       key: 'teams-trial' }
+      ];
+
+      var fallback = "That's worth a closer look. I'll flag it for the team and you'll hear back within one business day.\n\nOr if it's a pricing or security question, the Enterprise assistant can answer it right now without a call.";
+
+      var backdrop  = document.getElementById('demoModal');
+      var msgsEl    = document.getElementById('demoMsgs');
+      var inputEl   = document.getElementById('demoInput');
+      var sendBtn   = document.getElementById('demoSend');
+      var chipsEl   = document.getElementById('demoChips');
+      var busy      = false;
+
+      function open(initialKey) {
+        backdrop.classList.add('open');
+        if (initialKey) {
+          setTimeout(function () { trigger(flows[initialKey].q, initialKey); }, 380);
+        } else {
+          setTimeout(function () { if (inputEl) inputEl.focus(); }, 220);
+        }
+      }
+
+      // Buttons inside the email card
+      document.querySelectorAll('[data-open-demo]').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+          e.preventDefault();
+          open(el.dataset.openDemo);
+        });
+      });
+
+      // Chips inside the modal
+      document.querySelectorAll('[data-dflow]').forEach(function (el) {
+        el.addEventListener('click', function () {
+          var key = el.dataset.dflow;
+          trigger(flows[key] ? flows[key].q : el.textContent.trim(), key);
+        });
+      });
+
+      document.getElementById('demoClose').addEventListener('click', function () {
+        backdrop.classList.remove('open');
+      });
+      backdrop.addEventListener('click', function (e) {
+        if (e.target === backdrop) backdrop.classList.remove('open');
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && backdrop.classList.contains('open')) backdrop.classList.remove('open');
+      });
+
+      function addMsg(text, isUser) {
+        var d = document.createElement('div');
+        d.className = 'chat-msg' + (isUser ? ' user-msg' : '');
+        d.innerHTML = isUser
+          ? '<div class="chat-bubble">' + text + '</div>'
+          : '<div class="bot-avi">C</div><div class="chat-bubble">' + text.replace(/\n/g, '<br>') + '</div>';
+        msgsEl.appendChild(d);
+        msgsEl.scrollTop = msgsEl.scrollHeight;
+      }
+
+      function showTyping() {
+        var d = document.createElement('div');
+        d.id = 'demo-typing'; d.className = 'chat-msg';
+        d.innerHTML = '<div class="bot-avi">C</div><div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+        msgsEl.appendChild(d); msgsEl.scrollTop = msgsEl.scrollHeight;
+      }
+
+      function hideTyping() { var t = document.getElementById('demo-typing'); if (t) t.remove(); }
+
+      function setChips(list) {
+        if (!chipsEl) return;
+        chipsEl.innerHTML = '';
+        chipsEl.style.display = '';
+        list.forEach(function (c) {
+          var btn = document.createElement('button');
+          btn.className = 'chat-chip-btn';
+          btn.textContent = c.label;
+          btn.addEventListener('click', function () { trigger(c.label, c.key); });
+          chipsEl.appendChild(btn);
+        });
+      }
+
+      function trigger(question, key) {
+        if (busy) return;
+        busy = true;
+        if (sendBtn) sendBtn.disabled = true;
+        if (chipsEl) chipsEl.style.display = 'none';
+
+        addMsg(question, true);
+        showTyping();
+
+        var flow = flows[key] || null;
+        if (!flow) {
+          for (var i = 0; i < textMap.length; i++) {
+            if (textMap[i].re.test(question)) { flow = flows[textMap[i].key]; break; }
+          }
+        }
+        var answer  = flow ? flow.answer  : fallback;
+        var chips   = flow ? flow.chips   : null;
+        var action  = flow ? flow.action  : null;
+
+        setTimeout(function () {
+          hideTyping();
+          addMsg(answer, false);
+          busy = false;
+          if (sendBtn) sendBtn.disabled = false;
+
+          if (chips) {
+            setChips(chips);
+          } else if (action === 'open-enterprise') {
+            chipsEl.style.display = '';
+            chipsEl.innerHTML = '';
+            var btn = document.createElement('button');
+            btn.className = 'chat-chip-btn';
+            btn.textContent = 'Open Enterprise assistant →';
+            btn.addEventListener('click', function () {
+              backdrop.classList.remove('open');
+              setTimeout(function () { document.getElementById('chatModal').classList.add('open'); }, 180);
+            });
+            chipsEl.appendChild(btn);
+          }
+
+          setTimeout(function () { if (inputEl) inputEl.focus(); }, 50);
+        }, 880 + Math.random() * 500);
+      }
+
+      function send() {
+        var val = inputEl ? inputEl.value.trim() : '';
+        if (!val || busy) return;
+        inputEl.value = '';
+        var key = null;
+        for (var i = 0; i < textMap.length; i++) {
+          if (textMap[i].re.test(val)) { key = textMap[i].key; break; }
+        }
+        trigger(val, key);
+      }
+
+      if (sendBtn) sendBtn.addEventListener('click', send);
+      if (inputEl) inputEl.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+      });
+    })();
+  </script>
+
+</body>
+</html>
